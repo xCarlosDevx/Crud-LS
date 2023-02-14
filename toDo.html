@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To do</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div>
+        <h4>List</h4>
+        <input type="text" v-model="sendData.modelName" placeholder="Name" />
+
+        <input
+          type="text"
+          v-model="sendData.modelDescription"
+          placeholder="Description"
+        />
+
+        <input type="button" value="Clear" @click="onClear" />
+        <input type="button" value="Save" @click="onAgreeData" />
+      </div>
+      <div
+        style="
+          margin-top: 10px;
+          padding: 10px 5px 10px 5px;
+          border: 2px solid;
+          width: 70vw;
+        "
+      >
+        <h4 style="margin: 0">Local data base</h4>
+        <table>
+          <tr>
+            <td>Name</td>
+            <td>Description</td>
+          </tr>
+          <tr v-for="(item,index) in localDataBase" :key="index">
+            <td>{{item.name}}</td>
+            <td>{{item.description}}</td>
+            <td>
+              <input
+                type="button"
+                value="remove"
+                @click="remove(index,'local')"
+              />
+            </td>
+            <td>
+              <input type="text" v-model="item.name" placeholder="Name" />
+
+              <input
+                type="text"
+                v-model="item.description"
+                placeholder="Description"
+              />
+              <input type="button" value="edit" @click="put(index,'local')" />
+            </td>
+          </tr>
+        </table>
+
+        <input
+          v-if="localDataBase.length > 0"
+          type="button"
+          value="Send to server"
+          @click="post"
+        />
+      </div>
+      <div
+        style="
+          margin-top: 10px;
+          padding: 10px 5px 10px 5px;
+          border: 2px solid;
+          width: 70vw;
+        "
+      >
+        <input
+          style="margin-bottom: 10px"
+          type="button"
+          value="Get server data"
+          @click="get"
+        />
+        <h4 style="margin: 0">Server data base</h4>
+        <table>
+          <tr>
+            <td>Name</td>
+            <td>Description</td>
+          </tr>
+          <tr v-for="(item,index) in serverDataBase">
+            <td>{{item.name}}</td>
+            <td>{{item.description}}</td>
+            <td>
+              <input
+                type="button"
+                value="remove"
+                @click="remove(index,'server')"
+              />
+            </td>
+            <td>
+              <input type="text" v-model="item.name" placeholder="Name" />
+
+              <input
+                type="text"
+                v-model="item.description"
+                placeholder="Description"
+              />
+              <input type="button" value="edit" @click="put(index,'server')" />
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          localDataBase: [],
+          serverDataBase: [],
+          sendData: {
+            modelName: null,
+            modelDescription: null,
+          },
+        },
+        mounted() {
+          this.get();
+        },
+        methods: {
+          get() {
+            this.serverDataBase = localStorage.getItem("dataBase-LS");
+            this.serverDataBase = JSON.parse(this.serverDataBase);
+          },
+          put(index, location) {
+            if (location != "local") {
+              let newValue = JSON.parse(JSON.stringify(this.serverDataBase));
+              localStorage.removeItem("dataBase-LS");
+              localStorage.setItem("dataBase-LS", JSON.stringify(newValue));
+              this.get();
+            }
+          },
+          post() {
+            localStorage.setItem(
+              "dataBase-LS",
+              JSON.stringify(this.localDataBase)
+            );
+
+            this.localDataBase = [];
+          },
+          remove(index, location) {
+            if (location == "local") {
+              this.localDataBase.splice(index, 1);
+            } else {
+              this.serverDataBase.splice(index, 1);
+              localStorage.removeItem("dataBase-LS");
+              localStorage.setItem(
+                "dataBase-LS",
+                JSON.stringify(this.serverDataBase)
+              );
+              this.get();
+            }
+          },
+          onAgreeData() {
+            this.localDataBase.push({
+              name: this.sendData.modelName,
+              description: this.sendData.modelDescription,
+            });
+            this.sendData = {
+              modelName: null,
+              modelDescription: null,
+            };
+          },
+          onClear() {
+            this.sendData = {
+              modelName: null,
+              modelDescription: null,
+            };
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
